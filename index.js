@@ -1,11 +1,25 @@
-require('winax');
-var con = new ActiveXObject('WbemScripting.SWbemLocator');
-var svr = con.ConnectServer('.', 'root\\OpenHardwareMonitor');
-var hardware = svr.ExecQuery("Select * from Hardware");
-console.log(hardware.Count);
+const ActiveXObject = require('winax');
 
-for(var i = 0; i<hardware.Count; i++) {
-	var p = hardware.ItemIndex(i).Properties_;
-	console.log(p.Item('HardwareType').Value);
-	console.log(p.Item('Name').Value);
+export default class OpenHardwareMonitor {
+  constructor() {
+    this.conn = new ActiveXObject('WbemScripting.SWbemLocator');
+    this.svr = this.con.ConnectServer('.', 'root\\OpenHardwareMonitor');
+  }
+
+  getHardware() {
+    const hardware = [];
+    const hardwareResults = this.svr.ExecQuery('Select * from Hardware');
+    for (let i = 0; i < hardwareResults.Count; i += 1) {
+      const p = hardwareResults.ItemIndex(i).Properties_;
+      hardware.push({
+        HardwareType: p.Item('HardwareType').Value,
+        Name: p.Item('Name').Value,
+        Identifier: p.Item('Identifier').Value,
+        InstanceId: p.Item('InstanceId').Value,
+      });
+    }
+
+    return hardware;
+  }
 }
+
