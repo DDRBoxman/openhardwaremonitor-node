@@ -21,5 +21,22 @@ export default class OpenHardwareMonitor {
 
     return hardware;
   }
+
+  getGPUTemps() {
+    const temps = [];
+    const sensorResults = this.svr.ExecQuery('Select * from Sensor Where (Parent LIKE "/nvidiagpu/[0-9]" OR Parent LIKE "/atigpu/[0-9]") AND SensorType = "Temperature"');
+    for (let i = 0; i < sensorResults.Count; i += 1) {
+      const p = sensorResults.ItemIndex(i).Properties_;
+      temps.push({
+        Name: p.Item('Name').Value,
+        Identifier: p.Item('Identifier').Value,
+        InstanceId: p.Item('InstanceId').Value,
+        Min: p.Item('Min').Value,
+        Max: p.Item('Max').Value,
+      });
+    }
+
+    return temps;
+  }
 }
 
