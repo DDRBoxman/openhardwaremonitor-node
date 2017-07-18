@@ -1,25 +1,32 @@
-const ActiveXObject = require('winax');
+const ActiveX = require('winax');
 
-export default class OpenHardwareMonitor {
+class OpenHardwareMonitor {
   constructor() {
-    this.conn = new ActiveXObject('WbemScripting.SWbemLocator');
-    this.svr = this.con.ConnectServer('.', 'root\\OpenHardwareMonitor');
+    this.conn = new ActiveX.Object('WbemScripting.SWbemLocator');
+    this.svr = this.conn.ConnectServer('.', 'root\\OpenHardwareMonitor');
+  }
+
+  query(queryString) {
+    const results = [];
+    const queryResponse = this.svr.ExecQuery(queryString);
+    for (let i = 0; i < queryResponse.Count; i += 1) {
+      const properties = queryResponse.ItemIndex(i).Properties_;
+      let count = properties.Count;
+      const propEnum = properties._NewEnum;
+      const obj = {};
+      while (count) {
+        count -= 1;
+        const prop = propEnum.Next(1);
+        obj[prop.Name] = prop.Value;
+      }
+      results.push(obj);
+    }
+
+    return results;
   }
 
   getHardware() {
-    const hardware = [];
-    const hardwareResults = this.svr.ExecQuery('Select * from Hardware');
-    for (let i = 0; i < hardwareResults.Count; i += 1) {
-      const p = hardwareResults.ItemIndex(i).Properties_;
-      hardware.push({
-        HardwareType: p.Item('HardwareType').Value,
-        Name: p.Item('Name').Value,
-        Identifier: p.Item('Identifier').Value,
-        InstanceId: p.Item('InstanceId').Value,
-      });
-    }
-
-    return hardware;
+    return this.query('Select * from Hardware');
   }
 
   getGPUTemps() {
@@ -40,3 +47,4 @@ export default class OpenHardwareMonitor {
   }
 }
 
+module.exports = OpenHardwareMonitor;

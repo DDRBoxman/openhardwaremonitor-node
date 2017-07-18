@@ -9,7 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "winax": "^0.2.3"
+    "winax": "1.0.1"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
